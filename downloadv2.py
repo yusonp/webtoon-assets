@@ -139,7 +139,7 @@ def run_downloader():
                         newly_added_list.append({
                             'id': webtoon_id, 'title': title,
                             'author': item.find('p', class_='text-muted mt-1').find('span').get_text(strip=True) if item.find('p', class_='text-muted mt-1') else '작가 미상',
-                            'episodes': episodes, 'thumbnail': f"/static/images/{filename}",
+                            'episodes': episodes, 'thumbnail': f"https://cdn.jsdelivr.net/gh/yusonp/webtoon-assets/{filename}",
                             'url': detail_page_url
                         })
             except Exception as e:

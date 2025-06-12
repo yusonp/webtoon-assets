@@ -8,7 +8,7 @@ from oauth2client.service_account import ServiceAccountCredentials
 # 1. 구글 인증 JSON 파일 경로
 CREDS_FILE = 'credentials.json' 
 # 2. 연동할 구글 스프레드시트 이름
-SPREADSHEET_NAME = '나의 웹툰 목록' # 실제 스프레드시트 이름을 입력하세요.
+SPREADSHEET_NAME = 'webtoons' # 실제 스프레드시트 이름을 입력하세요.
 # 3. 크롤링 데이터가 담긴 JSON 파일
 JSON_FILE = 'webtoons.json'
 
