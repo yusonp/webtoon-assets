@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>블랙툰 웹툰 관리</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white; padding: 30px; text-align: center;
+        }
+        .header h1 { font-size: 2.5rem; margin-bottom: 10px; text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3); }
+        .header p { font-size: 1.1rem; opacity: 0.9; }
+        .main-controls {
+            padding: 15px 30px;
+            text-align: center;
+            background: rgba(79, 70, 229, 0.05);
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+        .filter-controls {
+            padding: 20px 30px;
+            text-align: center;
+            background: rgba(79, 70, 229, 0.05);
+        }
+        .load-btn {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white; border: none; padding: 15px 30px; font-size: 1rem;
+            border-radius: 50px; cursor: pointer; transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(16, 185, 129, 0.4); margin: 5px;
+        }
+        .load-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.6);
+        }
+        .filter-btn {
+            background: #fff; color: #4f46e5; border: 2px solid #e0e7ff;
+            padding: 10px 20px; font-size: 0.9rem; font-weight: bold;
+            border-radius: 50px; cursor: pointer; transition: all 0.3s ease; margin: 5px;
+        }
+        .filter-btn:hover { transform: translateY(-2px); background: #eef2ff; }
+        .filter-btn.active { background: #4f46e5; color: white; border-color: #4f46e5; }
+        .loading { display: none; text-align: center; padding: 40px; color: #6b7280; }
+        .spinner {
+            border: 4px solid #e5e7eb; border-top: 4px solid #4f46e5;
+            border-radius: 50%; width: 40px; height: 40px;
+            animation: spin 1s linear infinite; margin: 0 auto 15px;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .webtoon-list { padding: 30px; }
+        .webtoon-item {
+            display: flex; align-items: center; padding: 20px; margin-bottom: 15px;
+            background: white; border-radius: 15px; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease; border: 2px solid transparent;
+        }
+        .webtoon-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            border-color: #4f46e5;
+        }
+        .webtoon-item.checked {
+            background: linear-gradient(135deg, #ecfccb 0%, #d9f99d 100%);
+            border-color: #22c55e;
+        }
+        .checkbox { margin-right: 15px; width: 20px; height: 20px; cursor: pointer; }
+        .thumbnail {
+            width: 120px; height: 60px; border-radius: 8px; margin-right: 20px;
+            object-fit: cover; box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+            background-color: #f3f4f6;
+        }
+        .webtoon-info { flex: 1; }
+        .webtoon-title { font-size: 1.2rem; font-weight: bold; color: #1f2937; margin-bottom: 5px; }
+        .webtoon-episodes { color: #4f46e5; font-weight: 600; font-size: 1.1rem; }
+        .webtoon-author { color: #6b7280; font-size: 0.9rem; }
+        .pagination { display: flex; justify-content: center; align-items: center; padding: 30px; gap: 10px; }
+        .page-btn {
+            padding: 10px 15px; border: 2px solid #e5e7eb; background: white;
+            border-radius: 8px; cursor: pointer; transition: all 0.3s ease;
+        }
+        .page-btn:hover { border-color: #4f46e5; color: #4f46e5; }
+        .page-btn.active { background: #4f46e5; color: white; border-color: #4f46e5; }
+        .page-info { margin: 0 20px; color: #6b7280; }
+        .stats {
+            display: flex; justify-content: space-around; padding: 20px;
+            background: rgba(79, 70, 229, 0.05); margin: 0 30px; border-radius: 10px;
+        }
+        .stat-item { text-align: center; }
+        .stat-number { font-size: 2rem; font-weight: bold; color: #4f46e5; }
+        .stat-label { color: #6b7280; font-size: 0.9rem; }
+        .error-message {
+            text-align: center; padding: 40px; color: #ef4444; background: rgba(239, 68, 68, 0.1);
+            margin: 20px; border-radius: 10px; border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎭 블랙툰 웹툰 관리</h1>
+            <p>100화 이상 웹툰을 회차순으로 관리하세요</p>
+        </div>
+
+        <div class="main-controls" style="display: flex; justify-content: center; gap: 15px;">
+            <button id="loadBtn" class="load-btn">🔄 목록 새로고침</button>
+            <button id="deleteCheckedBtn" class="load-btn" style="background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);">✔️ 체크 항목 삭제</button>
+            <button id="clearCacheBtn" class="load-btn" style="background: linear-gradient(135deg, #f43f5e 0%, #be123c 100%);">🗑️ 전체 캐시 삭제</button>
+        </div>
+
+		<div id="filter-container" class="filter-controls" style="display: none;">
+			<button class="filter-btn active" data-filter="0">전체</button>
+			<button class="filter-btn" data-filter="100">100화 이하</button>
+			<button class="filter-btn" data-filter="200">200화 이하</button>
+			<button class="filter-btn" data-filter="300">300화 이하</button>
+			<button class="filter-btn" data-filter="400">400화 이하</button>
+			<button class="filter-btn" data-filter="500">500화 이하</button>
+		</div>
+
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            <p>블랙툰에서 웹툰 목록을 불러오는 중...</p>
+        </div>
+
+        <div id="stats" class="stats" style="display: none;">
+            <div class="stat-item"><div id="totalCount" class="stat-number">0</div><div class="stat-label">총 웹툰</div></div>
+            <div class="stat-item"><div id="checkedCount" class="stat-number">0</div><div class="stat-label">체크됨</div></div>
+            <div class="stat-item"><div id="avgEpisodes" class="stat-number">0</div><div class="stat-label">평균 화수</div></div>
+        </div>
+
+        <div id="webtoonList" class="webtoon-list"></div>
+        <div id="pagination" class="pagination" style="display: none;"></div>
+    </div>
+
+    <script>
+        let originalWebtoonData = [];
+        let filteredWebtoonData = [];
+        let currentPage = 1;
+        const itemsPerPage = 10;
+        let checkedItems = new Set();
+        const CACHE_KEY = 'cachedBlackToonWebtoons';
+        let currentEpisodeFilter = 0;
+
+        function loadCheckedItems() {
+            try {
+                const saved = localStorage.getItem('checkedBlackToonWebtoons');
+                if (saved) {
+                    checkedItems = new Set(JSON.parse(saved));
+                }
+            } catch (error) {
+                console.error('체크 상태 로드 실패:', error);
+            }
+        }
+
+        function saveCheckedItems() {
+            try {
+                localStorage.setItem('checkedBlackToonWebtoons', JSON.stringify([...checkedItems]));
+            } catch (error) {
+                console.error('체크 상태 저장 실패:', error);
+            }
+        }
+
+        function loadCachedData() {
+            try {
+                const cachedData = localStorage.getItem(CACHE_KEY);
+                if (cachedData) {
+                    originalWebtoonData = JSON.parse(cachedData).sort((a,b) => b.episodes - a.episodes);
+                    applyFiltersAndRender();
+                }
+            } catch (error) {
+                console.error('캐시 로드 실패:', error);
+                localStorage.removeItem(CACHE_KEY);
+            }
+        }
+
+        function saveToCache(data) {
+            try {
+                localStorage.setItem(CACHE_KEY, JSON.stringify(data));
+            } catch (error) {
+                console.error('캐시 저장 실패:', error);
+            }
+        }
+        
+        function clearCache() {
+            if(confirm('정말로 모든 웹툰 목록 캐시를 삭제하시겠습니까?')){
+                localStorage.removeItem(CACHE_KEY);
+                localStorage.removeItem('checkedBlackToonWebtoons');
+                window.location.reload();
+            }
+        }
+
+        function applyFiltersAndRender() {
+            if (originalWebtoonData.length > 0) {
+                document.getElementById('stats').style.display = 'flex';
+                document.getElementById('filter-container').style.display = 'block';
+
+                let dataToRender = [...originalWebtoonData];
+
+                if (currentEpisodeFilter > 0) {
+					dataToRender = dataToRender.filter(w => w.episodes <= currentEpisodeFilter);
+                }
+                
+                filteredWebtoonData = dataToRender;
+                
+                currentPage = 1;
+                renderWebtoons();
+                renderPagination();
+                updateStats();
+            } else {
+                document.getElementById('webtoonList').innerHTML = '<div style="text-align: center; padding: 40px; color: #6b7280;">표시할 웹툰이 없습니다. 목록을 새로고침 해주세요.</div>';
+                document.getElementById('stats').style.display = 'none';
+                document.getElementById('filter-container').style.display = 'none';
+            }
+        }
+
+        function deleteCheckedItems() {
+            if (checkedItems.size === 0) {
+                alert('삭제할 항목을 먼저 체크해주세요.');
+                return;
+            }
+
+            if (confirm(`체크된 ${checkedItems.size}개의 항목을 목록에서 영구히 삭제하시겠습니까?`)) {
+                originalWebtoonData = originalWebtoonData.filter(w => !checkedItems.has(w.id));
+                checkedItems.clear();
+                saveToCache(originalWebtoonData);
+                saveCheckedItems();
+                applyFiltersAndRender();
+            }
+        }
+
+        // !! --- 누락되었던 함수 --- !!
+        async function fetchWebtoonData() {
+            const response = await fetch('/api/webtoons');
+            if (!response.ok) {
+                throw new Error('서버 응답 오류: ' + response.status);
+            }
+            const data = await response.json();
+            if (data.success) {
+                return data.data;
+            } else {
+                throw new Error(data.error || '데이터 가져오기 실패');
+            }
+        }
+        // !! -------------------- !!
+
+        function renderWebtoons() {
+            const container = document.getElementById('webtoonList');
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const pageData = filteredWebtoonData.slice(startIndex, endIndex);
+
+            if (pageData.length === 0) {
+                container.innerHTML = '<div style="text-align: center; padding: 40px; color: #6b7280;">이 조건에 맞는 웹툰이 없습니다.</div>';
+                return;
+            }
+
+            container.innerHTML = pageData.map(webtoon => `
+                <div class="webtoon-item ${checkedItems.has(webtoon.id) ? 'checked' : ''}">
+                    <input type="checkbox" class="checkbox" data-id="${webtoon.id}" ${checkedItems.has(webtoon.id) ? 'checked' : ''}>
+                    <img src="${webtoon.thumbnail}" class="thumbnail" alt="${webtoon.title}">
+                    <div class="webtoon-info">
+                        <div class="webtoon-title">
+                            <a href="${webtoon.url}" target="_blank" style="text-decoration: none; color: inherit;">
+                                ${webtoon.title}
+                            </a>
+                        </div>
+                        <div class="webtoon-episodes">${webtoon.episodes}화</div>
+                        <div class="webtoon-author">작가: ${webtoon.author}</div>
+                    </div>
+                </div>
+            `).join('');
+
+            container.querySelectorAll('.checkbox').forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    const id = parseInt(this.dataset.id);
+                    if (this.checked) {
+                        checkedItems.add(id);
+                        this.closest('.webtoon-item').classList.add('checked');
+                    } else {
+                        checkedItems.delete(id);
+                        this.closest('.webtoon-item').classList.remove('checked');
+                    }
+                    saveCheckedItems();
+                    updateStats();
+                });
+            });
+        }
+
+        function renderPagination() {
+            const totalPages = Math.ceil(filteredWebtoonData.length / itemsPerPage);
+            const container = document.getElementById('pagination');
+            if (totalPages <= 1) {
+                container.style.display = 'none';
+                return;
+            }
+            container.style.display = 'flex';
+            let paginationHTML = `<button class="page-btn" ${currentPage === 1 ? 'disabled' : ''} onclick="changePage(${currentPage - 1})">이전</button>`;
+            const maxVisiblePages = 5;
+            let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+            let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+            if (endPage - startPage + 1 < maxVisiblePages) {
+                startPage = Math.max(1, endPage - maxVisiblePages + 1);
+            }
+            for (let page = startPage; page <= endPage; page++) {
+                paginationHTML += `<button class="page-btn ${page === currentPage ? 'active' : ''}" onclick="changePage(${page})">${page}</button>`;
+            }
+            paginationHTML += `<button class="page-btn" ${currentPage === totalPages ? 'disabled' : ''} onclick="changePage(${currentPage + 1})">다음</button><div class="page-info">${currentPage} / ${totalPages} 페이지</div>`;
+            container.innerHTML = paginationHTML;
+        }
+        
+        // [수정] 버그 수정된 페이지 변경 함수
+        function changePage(page) {
+            const totalPages = Math.ceil(filteredWebtoonData.length / itemsPerPage);
+            if (page >= 1 && page <= totalPages) {
+                currentPage = page;
+                renderWebtoons();
+                renderPagination();
+                window.scrollTo(0, 0);
+            }
+        }
+
+        function updateStats() {
+            document.getElementById('totalCount').textContent = filteredWebtoonData.length;
+            document.getElementById('checkedCount').textContent = checkedItems.size;
+            const totalEpisodes = filteredWebtoonData.reduce((sum, w) => sum + w.episodes, 0);
+            const avgEpisodes = filteredWebtoonData.length > 0 ? Math.round(totalEpisodes / filteredWebtoonData.length) : 0;
+            document.getElementById('avgEpisodes').textContent = avgEpisodes;
+        }
+
+        function showError(message) {
+            document.getElementById('webtoonList').innerHTML = `<div class="error-message"><h3>⚠️ 오류 발생</h3><p>${message}</p><p style="margin-top: 10px; font-size: 0.9rem; opacity: 0.8;">백엔드 서버(http://localhost:5000)가 실행 중인지 확인해주세요.</p></div>`;
+        }
+        
+        async function loadWebtoons() {
+            const loadBtn = document.getElementById('loadBtn');
+            const loading = document.getElementById('loading');
+            loadBtn.disabled = true;
+            loading.style.display = 'block';
+            
+            try {
+                const rawData = await fetchWebtoonData();
+                originalWebtoonData = rawData.sort((a,b) => b.episodes - a.episodes);
+                saveToCache(originalWebtoonData);
+                
+                loading.style.display = 'none';
+                loadBtn.disabled = false;
+                
+                applyFiltersAndRender();
+                
+            } catch (error) {
+                console.error('웹툰 로드 실패:', error);
+                loading.style.display = 'none';
+                loadBtn.disabled = false;
+                let errorMessage = '데이터를 불러오는데 실패했습니다. ';
+                if (error.message.includes('Failed to fetch')) {
+                    errorMessage += '백엔드 서버에 연결할 수 없습니다.';
+                } else {
+                    errorMessage += error.message;
+                }
+                showError(errorMessage);
+            }
+        }
+
+        // 초기화
+        document.addEventListener('DOMContentLoaded', function() {
+            loadCheckedItems();
+            loadCachedData();
+            
+            document.getElementById('loadBtn').addEventListener('click', loadWebtoons);
+            document.getElementById('clearCacheBtn').addEventListener('click', clearCache);
+            document.getElementById('deleteCheckedBtn').addEventListener('click', deleteCheckedItems);
+
+            document.querySelectorAll('.filter-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+                    this.classList.add('active');
+                    currentEpisodeFilter = parseInt(this.dataset.filter);
+                    applyFiltersAndRender();
+                });
+            });
+            
+            document.addEventListener('keydown', function(event) {
+                if (event.key === 'Enter' && !document.getElementById('loadBtn').disabled) {
+                    loadWebtoons();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
