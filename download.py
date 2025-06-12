@@ -145,23 +145,39 @@ def run_downloader():
                     img_tag = header_div.find('img') if header_div else None
                     thumbnail_url = img_tag['src'] if img_tag and img_tag.has_attr('src') else None
                     if not thumbnail_url: continue
-
+                    
+                    # ================= [파일 저장 로직 확인 및 수정] =================
+                    
                     filename = f"{webtoon_id}{os.path.splitext(thumbnail_url)[1] or '.jpg'}"
                     save_path = os.path.join('static', 'images', filename)
-                    
+
+                    # 파일이 이미 존재하는지 확인
                     if not os.path.exists(save_path):
-                        img_response = session_for_images.get(thumbnail_url, headers={'Referer': TARGET_URL}, stream=True, timeout=10)
-                        if img_response.status_code == 200:
-                            os.makedirs(os.path.dirname(save_path), exist_ok=True)
-                            with open(save_path, 'wb') as f:
-                                for chunk in img_response.iter_content(1024): f.write(chunk)
+                        try:
+                            # 이미지 다운로드 요청
+                            img_response = session_for_images.get(thumbnail_url, headers={'Referer': TARGET_URL}, stream=True, timeout=15)
+                            
+                            # 요청 성공 시 (상태 코드 200)
+                            if img_response.status_code == 200:
+                                # [핵심] 저장할 폴더가 없으면 자동으로 생성하는 코드
+                                os.makedirs(os.path.dirname(save_path), exist_ok=True)
+                                
+                                # 파일을 바이너리(wb) 쓰기 모드로 열고 저장
+                                with open(save_path, 'wb') as f:
+                                    for chunk in img_response.iter_content(1024):
+                                        f.write(chunk)
+                                print(f"   -> 이미지 저장 성공: {save_path}")
+                            else:
+                                print(f"   -> 이미지 다운로드 실패 (상태 코드: {img_response.status_code})")
+                        except Exception as img_e:
+                            print(f"   -> 이미지 처리 중 오류 발생: {img_e}")
                     
                     newly_added_list.append({
                         'id': webtoon_id,
                         'title': title,
                         'author': item.find('p', class_='text-muted mt-1').find('span').get_text(strip=True) if item.find('p', class_='text-muted mt-1') else '작가 미상',
                         'episodes': episodes,
-                        'thumbnail': f"/static/images/{filename}",
+                        'thumbnail': f"https://cdn.jsdelivr.net/gh/yusonp/webtoon-assets/{filename}",
                         'url': detail_page_url
                     })
             except Exception as e:
