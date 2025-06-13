@@ -70,7 +70,8 @@
       // 이 JavaScript 코드가 브라우저에서 직접 실행됩니다.
       document.addEventListener('DOMContentLoaded', function() {
         // GitHub의 webtoons.json 파일 URL (jsDelivr CDN 사용)
-        const jsonUrl = `https://cdn.jsdelivr.net/gh/yusonp/webtoon-assets@master/webtoons.json?v=${new Date().getTime()}`;
+        const jsonUrl = 'https://raw.githubusercontent.com/yusonp/webtoon-assets/master/webtoons.json';  
+        // const jsonUrl = `https://cdn.jsdelivr.net/gh/yusonp/webtoon-assets@master/webtoons.json?v=${new Date().getTime()}`;
 
         // fetch API를 사용해 JSON 데이터를 비동기적으로 가져옵니다.
         fetch(jsonUrl)
