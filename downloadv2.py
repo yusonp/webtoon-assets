@@ -135,11 +135,12 @@ def run_downloader():
                                 print(f"      -> 이미지 저장 성공: {save_path}")
                             else:
                                 print(f"      -> 이미지 다운로드 실패 (상태 코드: {img_response.status_code})")
-                        
+                        CDN_BASE_URL = "https://cdn.jsdelivr.net/gh/yusonp/webtoon-assets@master"
                         newly_added_list.append({
                             'id': webtoon_id, 'title': title,
                             'author': item.find('p', class_='text-muted mt-1').find('span').get_text(strip=True) if item.find('p', class_='text-muted mt-1') else '작가 미상',
-                            'episodes': episodes, 'thumbnail': f"https://cdn.jsdelivr.net/gh/yusonp/webtoon-assets/{filename}",
+                            'episodes': episodes,
+                            'thumbnail': f"{CDN_BASE_URL}/static/images/{filename}",
                             'url': detail_page_url
                         })
             except Exception as e:
