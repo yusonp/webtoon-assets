@@ -1142,5 +1142,26 @@
         "episodes": 100,
         "thumbnail": "https://cdn.jsdelivr.net/gh/yusonp/webtoon-assets@master/static/images/14347.png",
         "url": "https://blacktoon373.com/webtoon/14347.html"
+    },
+    {
+        "id": 10169,
+        "title": "나 혼자 만렙 뉴비",
+        "episodes": 210,
+        "thumbnail": "static\\images\\10169.jpg",
+        "url": "https://blacktoon373.com/webtoon/10169.html"
+    },
+    {
+        "id": 10240,
+        "title": "역대급 영지 설계사",
+        "episodes": 200,
+        "thumbnail": "static\\images\\10240.jpg",
+        "url": "https://blacktoon373.com/webtoon/10240.html"
+    },
+    {
+        "id": 10170,
+        "title": "광마회귀",
+        "episodes": 158,
+        "thumbnail": "static\\images\\10170.jpg",
+        "url": "https://blacktoon373.com/webtoon/10170.html"
     }
 ]

@@ -13,7 +13,7 @@ JSON_FILE = os.path.join(script_dir, 'exclude_list.json')
 
 # 구글 스프레드시트 정보
 SPREADSHEET_NAME = 'Webtoons' # 실제 스프레드시트 이름을 입력하세요.
-IGNORE_SHEET_NAME = 'Ignore'    # 제외 목록이 있는 시트 이름
+IGNORE_SHEET_NAME = '제외목록'    # 제외 목록이 있는 시트 이름
 
 def sync_ignore_list_from_sheet():
     """'Ignore' 시트의 내용을 로컬 exclude_list.json 파일로 저장합니다."""
