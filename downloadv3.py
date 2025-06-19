@@ -20,7 +20,7 @@ def extract_episode_count(text):
     return int(numbers[-1]) if numbers else 0
 
 def run_downloader():
-    TARGET_URL = 'https://blacktoon373.com'
+    TARGET_URL = 'https://blacktoon374.com'
 
     # --- 기존 데이터 로드 ---
     try:
