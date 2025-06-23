@@ -14,7 +14,8 @@ def run_script(script_name, log_widget):
                 capture_output=True,
                 text=True,
                 check=True,
-                encoding='utf-8' # 인코딩 명시
+                encoding='cp949',  # Windows 한글 인코딩
+                errors='replace'   # 디코딩 오류 시 문자 치환
             )
             log_widget.insert(tk.END, f"--- '{script_name}' 결과 ---\n")
             log_widget.insert(tk.END, result.stdout)
